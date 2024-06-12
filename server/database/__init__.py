@@ -9,7 +9,7 @@ SQLALCHEMY_DATABASE_URL = "mysql+pymysql://{}:{}@{}/{}".format(
     MYSQL_CONFIG.get("username", "root"),
     MYSQL_CONFIG.get("password", "root"),
     MYSQL_CONFIG.get("address", "127.0.0.1:3306"),
-    MYSQL_CONFIG.get("database", "coms"),
+    MYSQL_CONFIG.get("database", "soms"),
 )
 
 # 创建数据库引擎
@@ -27,6 +27,8 @@ except Exception as e:
     logger.error(f'数据库连接失败! 请检查配置文件和数据库是否正确! error message: {e}')
     import sys
     sys.exit(0)
+
+
 
 
 

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from server.database import Base
+from server.database import Base, engine
 
 
 class Achievement(Base):
@@ -34,3 +34,6 @@ class UserAchievement(Base):
 
     user = relationship("User", back_populates="user_achievements")
     achievement = relationship("Achievement", back_populates="user_achievements")
+
+
+Base.metadata.create_all(engine)

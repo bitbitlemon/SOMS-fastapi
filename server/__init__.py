@@ -1,6 +1,7 @@
 from fastapi import FastAPI
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.cors import CORSMiddleware
-
+from .views import user as user_view
 import config
 
 app = FastAPI(
@@ -10,6 +11,8 @@ app = FastAPI(
     debug=config.DEBUG
 )
 
+# app.add_middleware(HTTPSRedirectMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,4 +20,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(user_view.router)
 

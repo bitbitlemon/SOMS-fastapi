@@ -1,5 +1,7 @@
 import os
 import yaml
+import urllib3
+urllib3.disable_warnings()
 
 
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -14,7 +16,10 @@ def load_config(config_path) -> dict:
 
 
 # 加载配置文件
-CONFIG = load_config(os.path.join(CURRENT_PATH, "config.yml"))
+try:
+    CONFIG = load_config(os.path.join(CURRENT_PATH, "config.yml"))
+except:
+    CONFIG = load_config(os.path.join(CURRENT_PATH, "config.template.yml"))
 # 是否开启debug模式
 DEBUG = CONFIG.get("debug", False)
 
@@ -27,3 +32,12 @@ if MYSQL_CONFIG.get("use_env"):
     MYSQL_CONFIG["username"] = username
     MYSQL_CONFIG["password"] = password
     MYSQL_CONFIG["address"] = db_address
+
+if "APP_ID" in os.environ and "APP_SECRET" in os.environ:
+    SECRET_CONFIG = CONFIG.get("secret", {})
+    SECRET_CONFIG["app_id"] = os.environ.get("APP_ID", '')
+    SECRET_CONFIG["app_secret"] = os.environ.get("APP_SECRET", '')
+    CONFIG["secret"] = SECRET_CONFIG
+
+
+

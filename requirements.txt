@@ -1,0 +1,10 @@
+fastapi
+pycryptodome
+pydantic
+python-jose
+PyYAML
+SQLAlchemy
+starlette
+uvicorn
+requests
+pymysql

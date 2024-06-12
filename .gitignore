@@ -1,5 +1,7 @@
 container.config.json
 config.yml
+.cert/
+.logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

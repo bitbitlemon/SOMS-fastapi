@@ -1,0 +1,41 @@
+debug: true
+
+log:
+  save_dir: "logs"
+  save_log: true
+
+weixin:
+  # AppID(小程序ID)
+  app_id: ""
+  # AppSecret(小程序密钥) 不要泄露
+  app_secret: ""
+
+# 鉴权配置
+secret:
+  # 密钥, 例如 a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p5
+  # 如果环境变量存在SECRET_KEY，则从环境变量加载
+  secret_key: ""
+  # 加密算法
+  algorithm: "HS256"
+  # token过期时间(分钟)
+  expire_time: 86400
+
+
+# mysql数据库配置
+mysql:
+  # 是否使用环境变量中的数据库配置
+  # MYSQL_ADDRESS
+  # MYSQL_USERNAME
+  # MYSQL_PASSWORD
+  use_env: true
+  # Mysql服务器地址
+  address: 127.0.0.1:3306
+  # Mysql数据库密码
+  username: root
+  # Mysql服务器密码
+  password: root
+  # 数据库名
+  database: soms
+
+
+

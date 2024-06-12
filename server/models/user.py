@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum
 from sqlalchemy.orm import relationship
-from server.database import Base
+from server.database import Base, engine
 
 
 class User(Base):
@@ -28,3 +28,7 @@ class UserProfile(Base):
 
     # 反向关联
     user = relationship("User", back_populates="profile")
+
+
+Base.metadata.create_all(engine)
+
