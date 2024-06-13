@@ -3,20 +3,21 @@ from sqlalchemy.orm import Session
 from server.models.user import User, UserProfile
 from server.models.achievement import Achievement, UserAchievement, AchievementContent
 from log import logger
+from utils import ProjectException
 
 
 def get_user_by_openid(db: Session, openid: str):
     return db.query(User).filter(User.openid == openid).first()
 
 
-def get_user_profile_by_openid(db: Session, openid: str):
+def get_user_profile_by_openid(db: Session, openid: str) -> UserProfile | None:
     user = db.query(User).filter(User.openid == openid).first()
     if not user:
         return None
     return db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
 
 
-def get_user_profile_by_user_id(db: Session, user_id: int):
+def get_user_profile_by_user_id(db: Session, user_id: int) -> UserProfile | None:
     return db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
 
 
@@ -59,6 +60,7 @@ def create_user(session: Session, openid: str, session_key: str, nick_name: str,
         # 如果遇到错误，回滚事务
         session.rollback()
         logger.error(f"创建用户失败: {e}")
+        raise ProjectException(f"创建用户失败: {e}")
     finally:
         # 关闭会话
         session.close()
@@ -86,6 +88,7 @@ def update_session_key(session: Session, openid: str, new_session_key: str):
     except Exception as e:
         session.rollback()
         logger.error(f"更新会话密钥失败: {e}")
+        raise ProjectException(f"更新会话密钥失败: {e}")
     finally:
         session.close()
 
@@ -122,5 +125,6 @@ def update_student_profile(session: Session, user_id: int, nick_name: Optional[s
     except Exception as e:
         session.rollback()
         logger.error(f"更新用户资料失败: {e}")
+        raise ProjectException(f"更新用户资料失败: {e}")
     finally:
         session.close()

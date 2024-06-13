@@ -1,19 +1,21 @@
-import os
-
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from server.database import SessionLocal
-from server.database.user import get_user_by_openid, update_session_key, create_user
+from server.database.user import *
+from server.models.user import User
+from server.schemas.user import StudentIdUpdate
 from config import CONFIG
 from log import logger
 from datetime import timedelta, datetime
 import requests
 from sqlalchemy.orm import Session
 import base64
+import os
 import json
 from Crypto.Cipher import AES
 from jose import JWTError, jwt
 
+from utils import ProjectException
 
 SECRET_CONFIG = CONFIG.get("secret", {})
 SECRET_KEY = SECRET_CONFIG.get("secret_key", "")
@@ -152,5 +154,12 @@ def user_login(session: Session, code: str, encrypt_data: str, iv: str) -> str:
     return openid
 
 
+def update_student_info(session: Session, info: StudentIdUpdate, user: User):
+    user_profile = get_user_profile_by_user_id(session, user_id=user.id)
+    if not user_profile:
+        raise ProjectException("错误, 查询不到用户信息!")
+    if user_profile.student_id == info.student_id:
+        raise ProjectException("该学号已存在!")
+    update_student_profile(session, user_id=user.id, student_id=info.student_id, college=info.college)
 
 

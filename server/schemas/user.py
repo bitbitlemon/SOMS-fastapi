@@ -9,6 +9,12 @@ class UserLogin(BaseModel):
     iv: str = Field(..., description="wx.getUserInfo获取到的解密偏移量")
 
 
+class StudentIdUpdate(BaseModel):
+    student_id: str = Field(..., description="学号")
+    college: str = Field(..., description="归属学院")
+
+
+
 class UserCreate(BaseModel):
     openid: str
     session_key: str
