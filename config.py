@@ -34,10 +34,10 @@ if MYSQL_CONFIG.get("use_env"):
     MYSQL_CONFIG["address"] = db_address
 
 if "APP_ID" in os.environ and "APP_SECRET" in os.environ:
-    SECRET_CONFIG = CONFIG.get("secret", {})
+    SECRET_CONFIG = CONFIG.get("weixin", {})
     SECRET_CONFIG["app_id"] = os.environ.get("APP_ID", '')
     SECRET_CONFIG["app_secret"] = os.environ.get("APP_SECRET", '')
-    CONFIG["secret"] = SECRET_CONFIG
+    CONFIG["weixin"] = SECRET_CONFIG
 
 
 
