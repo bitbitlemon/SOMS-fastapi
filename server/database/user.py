@@ -1,12 +1,12 @@
 from typing import Optional
 from sqlalchemy.orm import Session
 from server.models.user import User, UserProfile
-from server.models.achievement import Achievement, UserAchievement, AchievementContent
+from server.schemas.user import UserUpdate
 from log import logger
 from utils import ProjectException
 
 
-def get_user_by_openid(db: Session, openid: str):
+def get_user_by_openid(db: Session, openid: str) -> User | None:
     return db.query(User).filter(User.openid == openid).first()
 
 
@@ -21,9 +21,27 @@ def get_user_profile_by_user_id(db: Session, user_id: int) -> UserProfile | None
     return db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
 
 
+def get_user_profile_by_student_id(db: Session, student_id: str) -> UserProfile | None:
+    return db.query(UserProfile).filter(UserProfile.student_id == student_id).first()
 
-def create_user(session: Session, openid: str, session_key: str, nick_name: str, avatar_url: str, student_id: Optional[str] = None,
-                college: Optional[str] = None, user_type: str = 'student'):
+
+def get_model_by_id(session: Session, model, model_id: Optional[int], model_name: str):
+    """
+    根据某个表主键id获取该表id的对象
+    :param session: 数据库对象
+    :param model: 表模型
+    :param model_id: 表id
+    :param model_name: 表名
+    :return: None
+    """
+    if model_id is not None:
+        exists = session.query(model).filter(model.id == model_id).first()
+        if not exists:
+            raise ProjectException(f"{model_name} ID {model_id} 不存在!")
+        return exists
+
+
+def create_user(session: Session, openid: str, session_key: str, nick_name: str, avatar_url: str, user_type: str = 'student'):
     """
     创建新用户及其资料。
 
@@ -32,8 +50,6 @@ def create_user(session: Session, openid: str, session_key: str, nick_name: str,
     :param session_key: 会话密钥
     :param nick_name: 用户昵称
     :param avatar_url: 用户头像URL
-    :param student_id: 用户学号（可选）
-    :param college: 用户所在学院（可选）
     :param user_type: 用户类型，默认为'student'
     :return: None
     """
@@ -48,8 +64,6 @@ def create_user(session: Session, openid: str, session_key: str, nick_name: str,
             user_id=new_user.id,
             nick_name=nick_name,
             avatar_url=avatar_url,
-            student_id=student_id,
-            college=college,
             user_type=user_type
         )
         session.add(new_profile)
@@ -85,6 +99,7 @@ def update_session_key(session: Session, openid: str, new_session_key: str):
             logger.debug(f"用户ID {openid} 的会话密钥已更新。")
         else:
             logger.error(f"未找到ID为 {openid} 的用户。")
+            raise ProjectException(f"未找到ID为 {openid} 的用户。")
     except Exception as e:
         session.rollback()
         logger.error(f"更新会话密钥失败: {e}")
@@ -93,16 +108,14 @@ def update_session_key(session: Session, openid: str, new_session_key: str):
         session.close()
 
 
-def update_student_profile(session: Session, user_id: int, nick_name: Optional[str] = None, avatar_url: Optional[str] = None, student_id: Optional[str] = None, college: Optional[str] = None):
+
+def update_student_profile(session: Session, user_id: int, info: UserUpdate):
     """
     更新用户资料。
 
     :param session: 数据库对象
     :param user_id: 用户ID
-    :param nick_name: 新的昵称（可选）
-    :param avatar_url: 新的头像URL（可选）
-    :param student_id: 新的学号（可选）
-    :param college: 新的学院（可选）
+    :param info: 新用户信息的对象
     :return: None
     """
     try:
@@ -110,21 +123,26 @@ def update_student_profile(session: Session, user_id: int, nick_name: Optional[s
         profile = session.query(UserProfile).filter(UserProfile.user_id == user_id).first()
         if profile:
             # 更新用户资料
-            if nick_name is not None:
-                profile.nick_name = nick_name
-            if avatar_url is not None:
-                profile.avatar_url = avatar_url
-            if student_id is not None:
-                profile.student_id = student_id
-            if college is not None:
-                profile.college = college
+            if info.nick_name is not None:
+                profile.nick_name = info.nick_name
+            if info.avatar_url is not None:
+                profile.avatar_url = info.avatar_url
+            if info.student_id is not None:
+                profile.student_id = info.student_id
+            if info.user_type is not None:
+                profile.user_type = info.user_type
+            if info.class_id is not None:
+                profile.class_id = info.class_id
+            # 提交事务
             session.commit()
             logger.debug(f"用户ID {user_id} 的资料已更新。")
         else:
             logger.error(f"未找到ID为 {user_id} 的用户资料。")
+            raise ProjectException(f"未找到ID为 {user_id} 的用户资料。")
     except Exception as e:
         session.rollback()
         logger.error(f"更新用户资料失败: {e}")
         raise ProjectException(f"更新用户资料失败: {e}")
     finally:
         session.close()
+

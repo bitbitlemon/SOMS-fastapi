@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from server.database import SessionLocal
 from server.database.user import *
 from server.models.user import User
-from server.schemas.user import StudentIdUpdate
+from server.models.entity import StudentClass
+from server.models.achievement import UserAchievement
+from server.schemas.user import UserUpdate
 from config import CONFIG
 from log import logger
 from datetime import timedelta, datetime
@@ -14,7 +16,6 @@ import os
 import json
 from Crypto.Cipher import AES
 from jose import JWTError, jwt
-
 from utils import ProjectException
 
 SECRET_CONFIG = CONFIG.get("secret", {})
@@ -26,10 +27,8 @@ WX_CONFIG = CONFIG.get("weixin", {})
 APP_ID = WX_CONFIG.get("app_id", "")
 APP_SECRET = WX_CONFIG.get("app_secret", "")
 
-
 if "SECRET_KEY" in os.environ:
     SECRET_KEY = os.environ.get("SECRET_KEY")
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -72,6 +71,57 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_current_user_teacher(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> UserProfile:
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="无法验证令牌",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        openid: str = payload.get("openid")
+        if openid is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    profile = get_user_profile_by_openid(db, openid=openid)
+    if profile is None:
+        raise credentials_exception
+    if profile.user_type not in ["teacher", "admin"]:
+        raise HTTPException(
+            status_code=402,
+            detail="权限不足",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return profile
+
+
+
+def get_current_user_admin(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> UserProfile:
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="无法验证令牌",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        openid: str = payload.get("openid")
+        if openid is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    profile = get_user_profile_by_openid(db, openid=openid)
+    if profile is None:
+        raise credentials_exception
+    if profile.user_type != "admin":
+        raise HTTPException(
+            status_code=402,
+            detail="权限不足",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return profile
 
 
 def get_session(code: str):
@@ -154,12 +204,15 @@ def user_login(session: Session, code: str, encrypt_data: str, iv: str) -> str:
     return openid
 
 
-def update_student_info(session: Session, info: StudentIdUpdate, user: User):
+def update_student_info(session: Session, info: UserUpdate, user: User):
     user_profile = get_user_profile_by_user_id(session, user_id=user.id)
     if not user_profile:
         raise ProjectException("错误, 查询不到用户信息!")
-    if user_profile.student_id == info.student_id:
-        raise ProjectException("该学号已存在!")
-    update_student_profile(session, user_id=user.id, student_id=info.student_id, college=info.college)
+    if UserUpdate.student_id:
+        if get_user_profile_by_student_id(session, student_id=UserUpdate.student_id):
+            raise ProjectException("错误, 该学号已存在!")
 
+    # 检查班级id是否存在
+    get_model_by_id(session, StudentClass, info.class_id, "班级")
 
+    update_student_profile(session, user_id=user_profile.user_id, info=info)

@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, Field
 from enum import Enum
 from datetime import datetime
@@ -9,20 +10,22 @@ class UserLogin(BaseModel):
     iv: str = Field(..., description="wx.getUserInfo获取到的解密偏移量")
 
 
-class StudentIdUpdate(BaseModel):
-    student_id: str = Field(..., description="学号")
-    college: str = Field(..., description="归属学院")
+class UserTypeEnum(str, Enum):
+    student = "student"
+    teacher = "teacher"
+    admin = "admin"
 
 
-
-class UserCreate(BaseModel):
-    openid: str
-    session_key: str
-
-
-class UserProfileCreate(BaseModel):
-    openid: str
-    session_key: str
+class UserUpdate(BaseModel):
+    nick_name: Optional[str] = Field(None, description="用户昵称")
+    avatar_url: Optional[str] = Field(None, description="用户头像链接")
+    student_id: Optional[str] = Field(None, description="学号")
+    user_type: Optional[UserTypeEnum] = Field(None, description="用户类型")
+    class_id: Optional[int] = Field(None, description="归属班级ID")
 
 
+class APIResponse(BaseModel):
+    code: int
+    message: str
+    data: dict | None
 

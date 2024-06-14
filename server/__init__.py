@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from .views import user as user_view
+from .views import entity as entity_view
 
 
 app = FastAPI(
@@ -19,4 +20,5 @@ app.add_middleware(
 )
 
 app.include_router(user_view.router)
+app.include_router(entity_view.router)
 
