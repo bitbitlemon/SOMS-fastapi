@@ -64,8 +64,10 @@ def add_achievement_rule(db: Session, achievement_rule_data: AchievementRuleCrea
         primary_subject=achievement_rule_data.primary_subject,
         secondary_subject=achievement_rule_data.secondary_subject,
         tertiary_subject=achievement_rule_data.tertiary_subject,
+        level=achievement_rule_data.level,
         text_info=achievement_rule_data.text_info,
-        requires_file=achievement_rule_data.requires_file
+        requires_file=achievement_rule_data.requires_file,
+        score=achievement_rule_data.score
     )
     db.add(new_achievement_rule)
     db.commit()
@@ -74,7 +76,8 @@ def add_achievement_rule(db: Session, achievement_rule_data: AchievementRuleCrea
 
 
 def update_achievement_rule(db: Session, achievement_rule_data: AchievementRuleUpdate):
-    achievement_rule_to_update = db.query(AchievementRule).filter(AchievementRule.id == achievement_rule_data.id).first()
+    achievement_rule_to_update = db.query(AchievementRule).filter(
+        AchievementRule.id == achievement_rule_data.id).first()
 
     if not achievement_rule_to_update:
         raise ProjectException(f"成果表单规则 ID {achievement_rule_data.id} 不存在")
@@ -91,11 +94,17 @@ def update_achievement_rule(db: Session, achievement_rule_data: AchievementRuleU
     if achievement_rule_data.tertiary_subject is not None:
         achievement_rule_to_update.tertiary_subject = achievement_rule_data.tertiary_subject
 
+    if achievement_rule_data.level is not None:
+        achievement_rule_to_update.level = achievement_rule_data.level
+
     if achievement_rule_data.text_info is not None:
         achievement_rule_to_update.text_info = achievement_rule_data.text_info
 
     if achievement_rule_data.requires_file is not None:
         achievement_rule_to_update.requires_file = achievement_rule_data.requires_file
+
+    if achievement_rule_data.score is not None:
+        achievement_rule_to_update.score = achievement_rule_data.score
 
     db.commit()
     db.refresh(achievement_rule_to_update)
@@ -309,4 +318,12 @@ def query_achievement_with_submitted_forms_by_id(db: Session, achievement_id: in
             .first())
 
 
+def query_achievement_rules_by_achievement_id(db: Session, achievement_id: int) -> list[AchievementRule]:
+    """
+    查询指定成果表ID的所有规则
+    :param db: 数据库对象
+    :param achievement_id: 成果表ID
+    :return: list[AchievementRule]
+    """
+    return db.query(AchievementRule).filter(AchievementRule.achievement_id == achievement_id).all()
 

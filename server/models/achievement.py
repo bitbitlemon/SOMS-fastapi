@@ -18,15 +18,17 @@ class Achievement(Base):
 
 class AchievementRule(Base):
     __tablename__ = 'achievement_rules'
-    __table_args__ = {'comment': '成果表单规则'}
+    __table_args__ = {'comment': '成果规则表'}
 
     id = Column(Integer, primary_key=True, comment='成果表单规则ID')
     achievement_id = Column(Integer, ForeignKey('achievements.id'), comment='成果表ID外键')
-    primary_subject = Column(String(100), comment='一级科目')
-    secondary_subject = Column(String(100), comment='二级科目')
-    tertiary_subject = Column(String(100), comment='三级科目')
-    text_info = Column(Boolean, default=True, comment='是否需要文字信息')
-    requires_file = Column(Boolean, default=False, comment='是否上传信息')
+    primary_subject = Column(String(255), comment='一级科目')
+    secondary_subject = Column(String(255), comment='二级科目')
+    tertiary_subject = Column(String(255), comment='三级科目')
+    level = Column(Enum('其他', '院系级', '校级', '市级', '省级', '国家级', name='rule_level'), default='其他', nullable=False, comment='级别')
+    text_info = Column(Boolean, default=True, nullable=False, comment='是否需要文字信息')
+    requires_file = Column(Boolean, default=False, nullable=False, comment='是否上传信息')
+    score = Column(Float, default=0, nullable=False, comment='分数')
 
     achievement = relationship("Achievement", back_populates="contents")
     submitted_contents = relationship("SubmittedFormContent", back_populates="form_rule")

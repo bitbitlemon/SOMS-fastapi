@@ -50,3 +50,20 @@ def get_achievement_and_info_by_id(session: Session, achievement_id: int):
     raise ProjectException(f"成果表 ID {achievement_id} 不存在")
 
 
+
+def get_achievement_rules_by_achievement_id(session: Session, achievement_id: int):
+    achievement_rules = query_achievement_rules_by_achievement_id(session, achievement_id)
+    result = []
+    for achievement_rule in achievement_rules:
+        row = object_to_dict(achievement_rule)
+        result.append(row)
+    return result
+
+
+
+
+
+
+
+
+

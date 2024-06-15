@@ -36,8 +36,10 @@ class AchievementRuleCreate(BaseModel):
     primary_subject: Optional[str] = Field(..., description="一级科目")
     secondary_subject: Optional[str] = Field(..., description="二级科目")
     tertiary_subject: Optional[str] = Field(..., description="三级科目")
+    level: Optional[str] = Field(..., description="级别")
     text_info: Optional[bool] = Field(..., description="是否需要文字信息")
     requires_file: Optional[bool] = Field(..., description="是否上传信息")
+    score: Optional[float] = Field(..., description="分数")
 
 
 class AchievementRuleUpdate(BaseModel):
@@ -46,14 +48,15 @@ class AchievementRuleUpdate(BaseModel):
     primary_subject: Optional[str] = Field(None, description="一级科目")
     secondary_subject: Optional[str] = Field(None, description="二级科目")
     tertiary_subject: Optional[str] = Field(None, description="三级科目")
+    level: Optional[str] = Field(None, description="级别")
     text_info: Optional[bool] = Field(None, description="是否需要文字信息")
     requires_file: Optional[bool] = Field(None, description="是否上传信息")
+    score: Optional[float] = Field(None, description="分数")
 
 
 # SubmittedForm Pydantic Models
 class SubmittedFormBase(BaseModel):
     id: Optional[int] = Field(..., description="提交成果表ID")
-
 
 
 class SubmittedFormCreate(BaseModel):

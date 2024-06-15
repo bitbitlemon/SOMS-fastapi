@@ -22,3 +22,5 @@ if LOG_CONFIG.get("save_log", False):
     fh = logging.FileHandler(filename=LOG_PATH, encoding="utf-8")
     fh.setFormatter(formatter)
     logger.addHandler(fh)  # 将日志输出至文件
+
+logger.debug("日志初始化成功")

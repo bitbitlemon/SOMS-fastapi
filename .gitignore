@@ -1,5 +1,6 @@
 container.config.json
 config.yml
+test.py
 .cert/
 .logs/
 
