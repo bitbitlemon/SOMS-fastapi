@@ -2,9 +2,9 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from server.database import SessionLocal
 from server.database.user import *
+from server.models.achievement import *
 from server.models.user import User
 from server.models.entity import StudentClass
-from server.models.achievement import UserAchievement
 from server.schemas.user import UserUpdate
 from config import CONFIG
 from log import logger

@@ -1,9 +1,19 @@
 from typing import Optional
 from sqlalchemy.orm import Session, joinedload
 from log import logger
+from server.database.user import get_model_by_id
 from server.models.entity import StudentClass, Major, College
+from server.models.user import UserProfile
 from server.schemas.entity import UpdateClass, AddClass, AddCollege, UpdateCollege, UpdateMajor, AddMajor
 from utils import ProjectException
+
+
+def query_all_users(db: Session):
+    return db.query(UserProfile).options(
+        joinedload(UserProfile.student_class)
+        .joinedload(StudentClass.major)
+        .joinedload(Major.college)
+    ).all()
 
 
 def query_all_class(db: Session):
@@ -11,7 +21,8 @@ def query_all_class(db: Session):
 
 
 def query_class_by_id(db: Session, class_id: int):
-    return db.query(StudentClass).options(joinedload(StudentClass.major).joinedload(Major.college)).filter(StudentClass.id == class_id).first()
+    return db.query(StudentClass).options(joinedload(StudentClass.major).joinedload(Major.college)).filter(
+        StudentClass.id == class_id).first()
 
 
 def add_class(db: Session, class_data: AddClass):
@@ -35,6 +46,7 @@ def update_class(db: Session, class_data: UpdateClass):
         class_to_update.name = class_data.name
 
     if class_data.major_id is not None:
+        get_model_by_id(db, Major, class_data.major_id, "专业")
         class_to_update.major_id = class_data.major_id
 
     db.commit()
@@ -74,6 +86,7 @@ def update_major(db: Session, major_data: UpdateMajor):
         major_to_update.name = major_data.name
 
     if major_data.college_id is not None:
+        get_model_by_id(db, College, major_data.college_id, "学院")
         major_to_update.college_id = major_data.college_id
 
     db.commit()
@@ -142,5 +155,3 @@ def query_all_colleges(db: Session):
 
 def query_college_by_id(db: Session, college_id: int):
     return db.query(College).filter(College.id == college_id).first()
-
-

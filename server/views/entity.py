@@ -8,13 +8,26 @@ from server.schemas.user import UserUpdate, APIResponse
 from server.models import success_response, error_response
 
 Base.metadata.create_all(bind=engine)
-
 router = APIRouter()
 
 
+@router.get("/entity/user/all", tags=["user", "get"])
+async def _get_all_class(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
+    """获取所有班级信息"""
+    try:
+        user_profiles = get_all_user(db)
+        return success_response(user_profiles)
+    except ProjectException as e:
+        logger.error(e)
+        return error_response(str(e))
+    except Exception as e:
+        logger.exception(e)
+        return error_response("服务器错误，请重试", 500)
 
-@router.post("/entity/user/set", tags=["user", "update"])
-async def set_user_info(student_info: SetUserProfile, db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
+
+
+@router.post("/entity/user/update", tags=["user", "update"])
+async def _update_user_info(student_info: SetUserProfile, db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
     """根据更新用户信息"""
     try:
         update = UserUpdate()
