@@ -41,7 +41,7 @@ def get_model_by_id(session: Session, model, model_id: Optional[int], model_name
         return exists
 
 
-def create_user(session: Session, openid: str, session_key: str, nick_name: str, avatar_url: str, user_type: str = 'student'):
+def create_user(session: Session, openid: str, session_key: str, nick_name: str, avatar_url: str, user_type: str = 'student') -> User | None:
     """
     创建新用户及其资料。
 
@@ -68,8 +68,8 @@ def create_user(session: Session, openid: str, session_key: str, nick_name: str,
         )
         session.add(new_profile)
         session.commit()  # 提交事务以保存用户资料
-
         logger.debug("新用户创建成功，用户ID: {}，openid: {}".format(new_user.id, new_user.openid))
+        return new_user
     except Exception as e:
         # 如果遇到错误，回滚事务
         session.rollback()

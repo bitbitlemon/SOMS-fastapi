@@ -15,8 +15,8 @@ router = APIRouter()
 async def wx_code_login(user: UserLogin, db: Session = Depends(get_db)) -> APIResponse:
     """通过wx code获取openid和用户信息"""
     try:
-        openid = user_login(db, user.code, user.info, user.iv)
-        access_token = create_access_token({"openid": openid})
+        user_ = user_login(db, user.code, user.info, user.iv)
+        access_token = create_access_token({"id": user_.id, "openid": user_.openid})
         return success_response({"access_token": access_token, "token_type": "bearer"})
     except ProjectException as e:
         logger.error(e)

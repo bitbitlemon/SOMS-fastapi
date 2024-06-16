@@ -5,7 +5,7 @@ from log import logger
 
 def success_response(data=None):
     log_text = f"success_response, data:{data}"
-    logger.debug(log_text[:97] + "..." if len(log_text) > 100 else log_text)
+    logger.debug(log_text[:400] + "..." if len(log_text) > 400 else log_text)
     if data is not None:
         return JSONResponse(
             status_code=status.HTTP_200_OK,

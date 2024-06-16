@@ -2,7 +2,6 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from server.database import SessionLocal
 from server.database.user import *
-from server.models.achievement import *
 from server.models.user import User
 from server.models.entity import StudentClass
 from server.schemas.user import UserUpdate
@@ -17,6 +16,7 @@ import json
 from Crypto.Cipher import AES
 from jose import JWTError, jwt
 from utils import ProjectException
+
 
 SECRET_CONFIG = CONFIG.get("secret", {})
 SECRET_KEY = SECRET_CONFIG.get("secret_key", "")
@@ -147,7 +147,7 @@ def get_session(code: str):
         return openid, session_key
     except Exception as e:
         logger.warning(f"get_session fail: {e}")
-        raise e
+        raise ProjectException(str(e))
 
 
 class WXBizDataCrypt:
@@ -179,7 +179,7 @@ def decrypt(data, key, iv):
     return pc.decrypt(data, iv)
 
 
-def user_login(session: Session, code: str, encrypt_data: str, iv: str) -> str:
+def user_login(session: Session, code: str, encrypt_data: str, iv: str) -> User | None:
     """
     用户登录，更新session_key
     :param session: 数据库对象
@@ -190,18 +190,19 @@ def user_login(session: Session, code: str, encrypt_data: str, iv: str) -> str:
     """
     openid, session_key = get_session(code)
     user = get_user_by_openid(session, openid)
+    user_id = user.id
     if user:  # 用户存在
         update_session_key(session, user.openid, session_key)
     else:
         user_info = decrypt(encrypt_data, session_key, iv)
-        create_user(
+        return create_user(
             session=session,
             openid=openid,
             session_key=session_key,
             nick_name=user_info.get("nickName"),
             avatar_url=user_info.get("avatarUrl"),
         )
-    return openid
+    return User(id=user_id, openid=openid)
 
 
 def update_student_info(session: Session, info: UserUpdate, user: User):
