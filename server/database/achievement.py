@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from sqlalchemy import func, and_
 from sqlalchemy.orm import Session, joinedload
 from server.models.achievement import *
 from server.schemas.achievement import *
@@ -326,4 +329,11 @@ def query_achievement_rules_by_achievement_id(db: Session, achievement_id: int) 
     :return: list[AchievementRule]
     """
     return db.query(AchievementRule).filter(AchievementRule.achievement_id == achievement_id).all()
+
+
+def query_submitted_forms_with_contents(db: Session):
+    """使用joinedload查询，一次性加载相关的提交成果内容"""
+    return db.query(SubmittedForm).options(joinedload(SubmittedForm.contents)).all()
+
+
 

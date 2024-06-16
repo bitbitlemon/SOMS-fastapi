@@ -8,6 +8,7 @@ from .models.user import Log
 from .views import user as user_view
 from .views import entity as entity_view
 from .views import achievement as achievement_view
+from .views import count as count_view
 
 app = FastAPI(
     title="SOMS-fastapi",
@@ -68,3 +69,4 @@ async def db_session_middleware(request: Request, call_next):
 app.include_router(user_view.router)
 app.include_router(entity_view.router)
 app.include_router(achievement_view.router)
+app.include_router(count_view.router)
