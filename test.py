@@ -10,5 +10,5 @@ from utils import object_to_dict
 
 if __name__ == '__main__':
     db = SessionLocal()
-    stats = calculate_user_scores_with_names(db, 1)
+    stats = count_majors_and_colleges(db)
     print(stats)

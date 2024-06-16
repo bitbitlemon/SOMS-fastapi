@@ -166,9 +166,8 @@ def calculate_user_scores_for_achievement(db: Session, achievement_id: int):
     return scores_by_user
 
 
-
 def calculate_user_scores_with_names(db: Session, achievement_id: int):
-    # 使用前面定义的函数查询每个用户的总分
+    """查询每个用户的总分"""
     user_scores = db.query(
         SubmittedForm.user_id,
         func.sum(SubmittedFormContent.score).label('total_score')
@@ -199,3 +198,52 @@ def calculate_user_scores_with_names(db: Session, achievement_id: int):
 
     return results
 
+
+def count_user_types(db: Session):
+    """查询UserProfile中不同user_type的个数"""
+    user_type_counts = db.query(
+        UserProfile.user_type,
+        func.count(UserProfile.user_id).label('count')
+    ).group_by(
+        UserProfile.user_type
+    ).all()
+
+    # 将查询结果格式化为字典
+    counts_by_type = {user_type: count for user_type, count in user_type_counts}
+
+    return counts_by_type
+
+
+def count_approved_achievements_by_level(db: Session, levels: list[str] = None):
+    # 查询获得国家级和省级成果的数量，状态为 "approved"
+    if levels is None:
+        levels = ['省级', '国家级']
+    level_counts = db.query(
+        AchievementRule.level,  # 成果的级别
+        func.count(SubmittedFormContent.id).label('count')  # 计算每个级别的成果数量
+    ).join(
+        SubmittedFormContent, AchievementRule.id == SubmittedFormContent.form_rule_id
+    ).filter(
+        SubmittedFormContent.review_status == 'approved',  # 确保状态为 "approved"
+        AchievementRule.level.in_(levels)  # 限制查询到国家级和省级
+    ).group_by(
+        AchievementRule.level  # 按成果级别分组
+    ).all()
+
+    # 将查询结果转换为字典，键为级别，值为数量
+    counts_by_level = {level: count for level, count in level_counts}
+
+    return counts_by_level
+
+
+def count_majors_and_colleges(db: Session):
+    # 查询专业(Major)的数量
+    major_count = db.query(func.count(Major.id)).scalar()
+
+    # 查询学院(College)的数量
+    college_count = db.query(func.count(College.id)).scalar()
+
+    return {
+        "major_count": major_count,
+        "college_count": college_count
+    }

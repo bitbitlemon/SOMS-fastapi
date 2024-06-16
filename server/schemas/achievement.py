@@ -62,7 +62,7 @@ class SubmittedFormBase(BaseModel):
 class SubmittedFormCreate(BaseModel):
     achievement_id: Optional[int] = Field(..., description="成果表ID外键")
     user_id: Optional[int] = Field(..., description="用户ID外键")
-    submission_date: Optional[datetime] = Field(default_factory=datetime.utcnow, description="提交日期")
+    submission_date: Optional[datetime] = Field(default_factory=datetime.now, description="提交日期")
     review_status: Optional[ReviewStatus] = Field(..., description="审核状态")
     total_score: Optional[float] = Field(..., description="总分")
 
@@ -71,7 +71,7 @@ class SubmittedFormUpdate(BaseModel):
     id: int = Field(..., description="提交成果表ID")
     achievement_id: Optional[int] = Field(None, description="成果表ID外键")
     user_id: Optional[int] = Field(None, description="用户ID外键")
-    submission_date: Optional[datetime] = Field(default_factory=datetime.utcnow, description="提交日期")
+    submission_date: Optional[datetime] = Field(default_factory=datetime.now, description="提交日期")
     review_status: Optional[ReviewStatus] = Field(None, description="审核状态")
     total_score: Optional[float] = Field(None, description="总分")
 
@@ -108,7 +108,7 @@ class ReviewBase(BaseModel):
 class ReviewCreate(BaseModel):
     submitted_form_content_id: Optional[int] = Field(..., description="提交表单内容ID外键")
     reviewer_id: Optional[int] = Field(..., description="审核者ID，用户ID外键")
-    review_date: Optional[datetime] = Field(default_factory=datetime.utcnow, description="审核日期")
+    review_date: Optional[datetime] = Field(default_factory=datetime.now, description="审核日期")
     review_comments: Optional[str] = Field(..., description="审核意见")
     review_score: Optional[float] = Field(..., description="审核分数")
 
@@ -117,6 +117,6 @@ class ReviewUpdate(BaseModel):
     id: Optional[int] = Field(..., description="审核表ID")
     submitted_form_content_id: Optional[int] = Field(None, description="提交表单内容ID外键")
     reviewer_id: Optional[int] = Field(None, description="审核者ID，用户ID外键")
-    review_date: Optional[datetime] = Field(default_factory=datetime.utcnow, description="审核日期")
+    review_date: Optional[datetime] = Field(default_factory=datetime.now, description="审核日期")
     review_comments: Optional[str] = Field(None, description="审核意见")
     review_score: Optional[float] = Field(None, description="审核分数")

@@ -41,7 +41,7 @@ class SubmittedForm(Base):
     id = Column(Integer, primary_key=True, comment='提交成果表ID')
     achievement_id = Column(Integer, ForeignKey('achievements.id'), nullable=False, comment='成果表ID外键')
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False, comment='用户ID外键')
-    submission_date = Column(DateTime, default=datetime.utcnow, comment='提交日期')
+    submission_date = Column(DateTime, default=datetime.now, comment='提交日期')
     review_status = Column(Enum('pending', 'approved', 'rejected', name='review_status'), default='pending', comment='审核状态')
     total_score = Column(Float, comment='总分')
 
@@ -74,7 +74,7 @@ class Review(Base):
     id = Column(Integer, primary_key=True, comment='审核表ID')
     submitted_form_content_id = Column(Integer, ForeignKey('submitted_form_contents.id'), nullable=False, comment='提交表单内容ID外键')
     reviewer_id = Column(Integer, ForeignKey('users.id'), nullable=False, comment='审核者ID，用户ID外键')
-    review_date = Column(DateTime, default=datetime.utcnow, comment='审核日期')
+    review_date = Column(DateTime, default=datetime.now, comment='审核日期')
     review_comments = Column(Text, comment='审核意见')
     review_score = Column(Float, comment='审核分数')
 

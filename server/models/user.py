@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime, text
 from sqlalchemy.orm import relationship
 from server.database import Base, engine
 
@@ -10,7 +10,7 @@ class Log(Base):
     user_id = Column(String(255), nullable=True, comment="请求的用户id，如果不存在则为空")
     request_type = Column(String(255), comment="请求类型")
     request_path = Column(String(255), comment="请求路径")
-    timestamp = Column(DateTime, default=datetime.utcnow, comment="请求时间")
+    timestamp = Column(DateTime, default=datetime.now, server_default=text("CURRENT_TIMESTAMP"), comment="请求时间")
     source_ip = Column(String(255), comment="来源IP")
     user_agent = Column(String(255), comment="ua")
 
