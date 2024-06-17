@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from server.controllers.count import *
 from server.controllers.user import get_db, Depends, get_current_user_admin
 from server.database import Base, engine
@@ -31,7 +31,7 @@ async def _count_achievement(db: Session = Depends(get_db)) -> APIResponse:
 
 
 @router.get("/count/daily/active", tags=["count"])
-# async def _count_achievement(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
+# async def _daily_active(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
 async def _daily_active(db: Session = Depends(get_db)) -> APIResponse:
     """获取近14日的每日活跃人数"""
     try:
@@ -46,7 +46,7 @@ async def _daily_active(db: Session = Depends(get_db)) -> APIResponse:
 
 
 @router.get("/count/daily/submission", tags=["count"])
-# async def _count_achievement(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
+# async def _daily_submission(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
 async def _daily_submission(db: Session = Depends(get_db)) -> APIResponse:
     """获取近14日的每日提交数量"""
     try:
@@ -61,7 +61,7 @@ async def _daily_submission(db: Session = Depends(get_db)) -> APIResponse:
 
 
 @router.post("/count/rank/scores", tags=["count"])
-# async def _count_achievement(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
+# async def _rank_scores(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
 async def _rank_scores(achievement: AchievementScoreRank, db: Session = Depends(get_db)) -> APIResponse:
     """获取成果总分排行榜"""
     try:
@@ -76,7 +76,7 @@ async def _rank_scores(achievement: AchievementScoreRank, db: Session = Depends(
 
 
 @router.post("/count/submission/status", tags=["count"])
-# async def _count_achievement(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
+# async def _submission_status(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
 async def _submission_status(achievement: AchievementLevel, db: Session = Depends(get_db)) -> APIResponse:
     """获取级别分组数量"""
     try:
@@ -91,7 +91,7 @@ async def _submission_status(achievement: AchievementLevel, db: Session = Depend
 
 
 @router.get("/count/info", tags=["count"])
-# async def _count_achievement(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
+# async def _count_info(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
 async def _count_info(db: Session = Depends(get_db)) -> APIResponse:
     """
     获取一些信息
@@ -105,6 +105,43 @@ async def _count_info(db: Session = Depends(get_db)) -> APIResponse:
             level_types=count_approved_achievements_by_level(db),
             count=count_majors_and_colleges(db),
         )
+        return success_response(data)
+    except ProjectException as e:
+        logger.error(e)
+        return error_response(str(e))
+    except Exception as e:
+        logger.exception(e)
+        return error_response("服务器错误，请重试", 500)
+
+
+@router.get("/count/scores/college", tags=["count"])
+# async def _count_scores_by_college(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
+async def _count_scores_by_college(db: Session = Depends(get_db)) -> APIResponse:
+    """
+    获取统计每个学院总分
+    """
+    try:
+        data = query_scores_by_college(db)
+        return success_response(data)
+    except ProjectException as e:
+        logger.error(e)
+        return error_response(str(e))
+    except Exception as e:
+        logger.exception(e)
+        return error_response("服务器错误，请重试", 500)
+
+
+@router.get("/count/achievement/content", tags=["count"])
+# async def _count_scores_by_college(db: Session = Depends(get_db), user: User = Depends(get_current_user_admin)) -> APIResponse:
+async def _count_scores_by_college(
+        offset: int = Query(0, title="偏移量"),
+        length: int = Query(10, title="长度"),
+        db: Session = Depends(get_db)) -> APIResponse:
+    """
+    获取用户的用户名和提交的相关科目信息
+    """
+    try:
+        data = query_submitted_form_content_with_user_details(db, offset, length)
         return success_response(data)
     except ProjectException as e:
         logger.error(e)

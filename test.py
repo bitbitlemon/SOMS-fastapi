@@ -10,5 +10,8 @@ from utils import object_to_dict
 
 if __name__ == '__main__':
     db = SessionLocal()
-    stats = count_majors_and_colleges(db)
-    print(stats)
+    data = query_submitted_form_content_with_user_details(db, 2000)
+    # print(data)
+    for item in data:
+        print(item)
+

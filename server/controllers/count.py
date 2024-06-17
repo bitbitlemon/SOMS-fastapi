@@ -247,3 +247,69 @@ def count_majors_and_colleges(db: Session):
         "major_count": major_count,
         "college_count": college_count
     }
+
+
+def query_scores_by_college(db: Session):
+    # 学院（College）-> 专业（Major）-> 班级（StudentClass）-> 用户简介（UserProfile）-> 用户（User）
+    results = db.query(
+        College.name.label("college_name"),
+        func.sum(SubmittedFormContent.score).label("total_score")
+    ).join(
+        Major, College.id == Major.college_id  # 从学院到专业
+    ).join(
+        StudentClass, Major.id == StudentClass.major_id  # 从专业到班级
+    ).join(
+        UserProfile, StudentClass.id == UserProfile.class_id  # 从班级到用户简介
+    ).join(
+        User, UserProfile.user_id == User.id  # 从用户简介到用户
+    ).join(
+        SubmittedForm, User.id == SubmittedForm.user_id  # 从用户到提交的表单
+    ).join(
+        SubmittedFormContent, SubmittedForm.id == SubmittedFormContent.submitted_form_id  # 从提交表单到具体内容
+    ).filter(
+        SubmittedFormContent.review_status == "approved"  # 假设我们只计算审核通过的分数
+    ).group_by(
+        College.name
+    ).all()
+
+    # 结果是每个学院及其下所有用户的所有审核通过的分数总和
+    return [{"name": name, "value": total_score} for name, total_score in results]
+
+
+def query_submitted_form_content_with_user_details(db: Session, offset_x: int = 0, length_l: int = 20):
+    # 查询数据，包括用户名和对应的科目信息
+    results = db.query(
+        UserProfile.nick_name.label("username"),
+        AchievementRule.primary_subject.label("primary_subject"),
+        AchievementRule.secondary_subject.label("secondary_subject"),
+        AchievementRule.tertiary_subject.label("tertiary_subject"),
+        AchievementRule.level.label("level")
+    ).join(
+        User, UserProfile.user_id == User.id  # 从UserProfile到User
+    ).join(
+        SubmittedForm, User.id == SubmittedForm.user_id  # 从User到SubmittedForm
+    ).join(
+        SubmittedFormContent, SubmittedForm.id == SubmittedFormContent.submitted_form_id
+        # 从SubmittedForm到SubmittedFormContent
+    ).join(
+        AchievementRule, SubmittedFormContent.form_rule_id == AchievementRule.id
+        # 从SubmittedFormContent到AchievementRule
+    ).order_by(
+        SubmittedFormContent.id  # 以SubmittedFormContent的id为排序方式
+    ).offset(
+        offset_x  # 应用偏移量
+    ).limit(
+        length_l  # 应用长度限制
+    ).all()
+
+    # 返回格式化结果
+    return [
+        {
+            "name": username,
+            "primary_subject": primary_subject,
+            "secondary_subject": secondary_subject,
+            "tertiary_subject": tertiary_subject,
+            "level": level
+        }
+        for username, primary_subject, secondary_subject, tertiary_subject, level in results
+    ]
